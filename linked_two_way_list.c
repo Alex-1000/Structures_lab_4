@@ -5,15 +5,13 @@
 #include <time.h>
 #include <wchar.h>
 #include <wctype.h>
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#include <conio.h>
-#define print _cputws
-#define printf _cprintf_s
-#define get _getwch
-#define clear _clrscr
-#else
+
 #define _XOPEN_SOURCE 700
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#include <ncurses/ncurses.h>
+#else
 #include <ncurses.h>
+#endif
 #define print addwstr
 #define printf printw
 wchar_t get() {
@@ -25,8 +23,6 @@ wchar_t get() {
 int gotoxy(int x, int y) { return move(y, x); }
 int wherex() { return getcurx(stdscr); }
 int wherey() { return getcury(stdscr); }
-#define NCURSES
-#endif
 
 enum {
     INIT = 'O',
@@ -124,7 +120,7 @@ void update_terminal(TwoWayNode* ptr, wchar_t buffer) {
     print(str);
     free(str);
     if (buffer == '\0')
-        gotoxy(wherex(), wherey() + 1);
+        print("\n");
     else
         printf("%ls%c\n", L"Буффер: ", buffer);
 }
