@@ -14,7 +14,7 @@
 
 // Элемент двусвязного списка
 struct TwoWayNode {
-    char symbol;
+    wchar_t symbol;
     struct TwoWayNode* prev;
     struct TwoWayNode* next;
 };
@@ -64,7 +64,7 @@ void LinkedTwoWayList_insert(TwoWayNode* previous, TwoWayNode* node) {
 }
 // Вставить символ после указанного (двусвязный список)
 // Возвращает новый элемент
-TwoWayNode* LinkedTwoWayList_insertChar(TwoWayNode* previous, char symbol) {
+TwoWayNode* LinkedTwoWayList_insertChar(TwoWayNode* previous, wchar_t symbol) {
     TwoWayNode* node = LinkedTwoWayList_newNode(
         symbol, previous, previous == NULL ? NULL : previous->next);
     if (previous != NULL) {
@@ -120,12 +120,12 @@ TwoWayNode* LinkedTwoWayList_remove(TwoWayNode* node) {
 
 // Прочитать файл в двусвязный список, используя буфер
 TwoWayNode* LinkedTwoWayList_fromFile(FILE* file, const size_t buffer_size,
-                                      const char stop) {
+                                      const wchar_t stop) {
     TwoWayNode* start = LinkedTwoWayList_newEmpty();
     TwoWayNode* end = start;
     TwoWayNode* second;
     int file_desc = fileno(file);
-    char* buffer = (char*)malloc(sizeof(char) * buffer_size);
+    wchar_t* buffer = (char*)malloc(sizeof(char) * buffer_size);
     int found_stop = 0;
     int read_size;
 
@@ -158,7 +158,7 @@ TwoWayNode* LinkedTwoWayList_fromFile(FILE* file, const size_t buffer_size,
 char* LinkedTwoWayList_toString(TwoWayNode* node) {
     size_t alloc_size = DEFAULT_ALLOC_SIZE;
     size_t str_size = 0;
-    char* str = (char*)malloc(sizeof(char) * alloc_size);
+    wchar_t* str = (char*)malloc(sizeof(char) * alloc_size);
     while (node != NULL) {
         str[str_size++] = node->symbol;
         if (str_size >= alloc_size) {

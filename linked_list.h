@@ -1,5 +1,7 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <io.h>
@@ -13,7 +15,7 @@
 #define DEFAULT_BUFFER 5 // Размер буфера для чтения файла по умолчанию
 
 struct Node {
-    char symbol;
+    wchar_t symbol;
     struct Node* next;
 };
 
@@ -32,6 +34,7 @@ Node* LinkedList_newNode(char symbol, Node* next) {
 // Создать новый элемент
 Node* LinkedList_newEmpty() {
     Node* node = (Node*)malloc(sizeof(Node));
+    node->symbol = '\0';
     node->next = NULL;
     return node;
 }
@@ -46,7 +49,7 @@ void LinkedList_insert(Node* previous, Node* node) {
 }
 // Вставить символ после указанного
 // Возвращает новый элемент
-Node* LinkedList_insertChar(Node* previous, char symbol) {
+Node* LinkedList_insertChar(Node* previous, wchar_t symbol) {
     Node* node = LinkedList_newNode(symbol, NULL);
     LinkedList_insert(previous, node);
     return node;
@@ -69,13 +72,17 @@ Node* LinkedList_remove(Node* node) {
     free(node);
     return next;
 }
-// Удалить все элементы после данного
+// Удалить все элементы после данного и отчистить данный элемент
 Node* LinkedList_empty(Node* node) {
     Node* next;
-    for (Node* n = node->next; node != NULL; n = next) {
-        next = n->next;
-        free(n);
+    if (node->next != NULL) {
+        for (Node* n = node->next; next != NULL; n = next) {
+            next = n->next;
+            free(n);
+        }
     }
+    node->next = NULL;
+    node->symbol = '\0';
     return node;
 }
 
@@ -86,16 +93,35 @@ Node* LinkedList_lastNode(Node* node) {
         ;
     return end;
 }
+// Количество элементов списка
+size_t LinkedList_length(Node* node) {
+    size_t len = 0;
+    for (Node* end = node; end != NULL; end = end->next)
+        len++;
+    return len;
+}
+// Кол-во элементов между двумя элементами
+// Возвращает 0, если start == node
+// Возвращает SIZE_MAX, если node не находится в списке справа от start
+size_t LinkedList_dist(Node* start, Node* node) {
+    size_t len = 0;
+    Node* n;
+    for (n = start; n != node && n != NULL; n = n->next)
+        len++;
+    if (n == NULL)
+        return SIZE_MAX;
+    return len;
+}
 
 // Прочитать файл в односвязный список, используя буфер
 Node* LinkedList_fromFile(FILE* file, const size_t buffer_size,
-                          const char stop) {
+                          const wchar_t stop) {
     Node* start = LinkedList_newEmpty();
     Node* end = start;
     int file_desc = fileno(file);
-    char* buffer = (char*)malloc(sizeof(char) * buffer_size);
+    wchar_t* buffer = (wchar_t*)malloc(sizeof(wchar_t) * buffer_size);
     int found_stop = 0;
-    int read_size;
+    size_t read_size;
 
     while ((read_size = read(file_desc, buffer, buffer_size)) > 0) {
         for (size_t i = 0; i < read_size; i++) {
@@ -121,19 +147,19 @@ Node* LinkedList_fromFile(FILE* file, const size_t buffer_size,
 }
 
 // Преобразование односвязного списка в строку
-char* LinkedList_toString(Node* node) {
+wchar_t* LinkedList_toString(Node* node) {
     size_t alloc_size = DEFAULT_ALLOC_SIZE;
     size_t str_size = 0;
-    char* str = (char*)malloc(sizeof(char) * alloc_size);
+    wchar_t* str = (wchar_t*)malloc(sizeof(wchar_t) * alloc_size);
     for (; node != NULL; node = node->next) {
         str[str_size++] = node->symbol;
         if (str_size >= alloc_size) {
             alloc_size *= 2;
-            str = (char*)realloc(str, alloc_size);
+            str = (wchar_t*)realloc(str, sizeof(wchar_t) * alloc_size);
         }
     }
     str[str_size++] = '\0';
-    return (char*)realloc(str, str_size);
+    return (wchar_t*)realloc(str, sizeof(wchar_t) * str_size);
 }
 // Преобразование строки в односвязный список
 Node* LinkedList_fromString(char* str) {
