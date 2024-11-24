@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Build on linux'
+        description: 'Build on Windows'
         required: false
         default: 'development'
 env:
