@@ -192,7 +192,7 @@ TwoWayNode* LinkedTwoWayList_fromFile(FILE* file, const size_t buffer_size,
     TwoWayNode* end = start;
     TwoWayNode* second;
     int file_desc = fileno(file);
-    wchar_t* buffer = (char*)malloc(sizeof(char) * buffer_size);
+    wchar_t* buffer = (wchar_t*)malloc(sizeof(wchar_t) * buffer_size);
     int found_stop = 0;
     int read_size;
 
