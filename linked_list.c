@@ -1,5 +1,4 @@
 #include "linked_list.h"
-// #include "linked_two_way_list.h"
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>

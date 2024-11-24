@@ -1,5 +1,7 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <io.h>
@@ -50,7 +52,16 @@ TwoWayNode* LinkedTwoWayList_start(TwoWayNode* node) {
         node = node->prev;
     return node;
 }
-// Вставить элемент после указанного (двусвязный список)
+// Найти конец двусвязного списка
+TwoWayNode* LinkedTwoWayList_end(TwoWayNode* node) {
+    if (node == NULL)
+        return NULL;
+    while (node->next != NULL)
+        node = node->next;
+    return node;
+}
+
+// Вставить элемент после указанного
 void LinkedTwoWayList_insert(TwoWayNode* previous, TwoWayNode* node) {
     if (previous == NULL || node == NULL)
         return;
@@ -62,9 +73,24 @@ void LinkedTwoWayList_insert(TwoWayNode* previous, TwoWayNode* node) {
     next->prev = node;
     node->next = next;
 }
-// Вставить символ после указанного (двусвязный список)
+// Вставить символ перед указанным
 // Возвращает новый элемент
-TwoWayNode* LinkedTwoWayList_insertChar(TwoWayNode* previous, wchar_t symbol) {
+TwoWayNode* LinkedTwoWayList_insertChar(TwoWayNode* next, wchar_t symbol) {
+    TwoWayNode* node;
+    if (next != NULL) {
+        node = LinkedTwoWayList_newNode(symbol, next->prev, next);
+        next->prev = node;
+        if (node->prev != NULL)
+            node->prev->next = node;
+    } else {
+        node = LinkedTwoWayList_newEmpty();
+        node->symbol = symbol;
+    }
+    return node;
+}
+// Вставить символ после указанного
+// Возвращает новый элемент
+TwoWayNode* LinkedTwoWayList_appendChar(TwoWayNode* previous, wchar_t symbol) {
     TwoWayNode* node = LinkedTwoWayList_newNode(
         symbol, previous, previous == NULL ? NULL : previous->next);
     if (previous != NULL) {
@@ -78,7 +104,7 @@ TwoWayNode* LinkedTwoWayList_insertChar(TwoWayNode* previous, wchar_t symbol) {
     }
     return node;
 }
-// Удалить следующий элемент (двусвязный список)
+// Удалить следующий элемент
 // Возвращает новый следующий элемент
 TwoWayNode* LinkedTwoWayList_removeNext(TwoWayNode* previous) {
     if (previous == NULL || previous->next == NULL)
@@ -90,7 +116,7 @@ TwoWayNode* LinkedTwoWayList_removeNext(TwoWayNode* previous) {
         next->prev = previous;
     return next;
 }
-// Удалить предыдущий элемент (двусвязный список)
+// Удалить предыдущий элемент
 // Возвращает новый предыдущий элемент
 TwoWayNode* LinkedTwoWayList_removePrevious(TwoWayNode* next) {
     if (next == NULL || next->prev == NULL)
@@ -102,7 +128,7 @@ TwoWayNode* LinkedTwoWayList_removePrevious(TwoWayNode* next) {
     next->prev = previous;
     return previous;
 }
-// Удалить данный элемент (двусвязный список)
+// Удалить данный элемент
 // Возвращает следующий элемент
 TwoWayNode* LinkedTwoWayList_remove(TwoWayNode* node) {
     TwoWayNode* next = NULL;
@@ -116,6 +142,47 @@ TwoWayNode* LinkedTwoWayList_remove(TwoWayNode* node) {
     }
     free(node);
     return next;
+}
+// Удалить все элементы и отчистить данный элемент
+TwoWayNode* LinkedTwoWayList_empty(TwoWayNode* node) {
+    TwoWayNode* next;
+    if (node->next != NULL) {
+        for (TwoWayNode* n = node->next; next != NULL; n = next) {
+            next = n->next;
+            free(n);
+        }
+    }
+    if (node->prev != NULL) {
+        for (TwoWayNode* n = node->prev; next != NULL; n = next) {
+            next = n->prev;
+            free(n);
+        }
+    }
+    node->next = NULL;
+    node->symbol = '\0';
+    node->prev = NULL;
+    return node;
+}
+
+// Количество элементов списка
+size_t LinkedTwoWayList_length(TwoWayNode* node) {
+    size_t len = 0;
+    for (TwoWayNode* end = LinkedTwoWayList_start(node); end != NULL;
+         end = end->next)
+        len++;
+    return len;
+}
+// Расстояние между двумя элементами списка
+// Возвращает 0, если start == end
+// Возвращает SIZE_MAX, если end не находится в списке справа от start
+size_t LinkedTwoWayList_dist(TwoWayNode* start, TwoWayNode* end) {
+    size_t len = 0;
+    TwoWayNode* node;
+    for (node = start; node != end && node != NULL; node = node->next)
+        len++;
+    if (node == NULL)
+        return SIZE_MAX;
+    return len;
 }
 
 // Прочитать файл в двусвязный список, используя буфер
@@ -155,20 +222,20 @@ TwoWayNode* LinkedTwoWayList_fromFile(FILE* file, const size_t buffer_size,
 
 // Преобразование двусвязного списка в строку
 // На вход передаётся начало списка
-char* LinkedTwoWayList_toString(TwoWayNode* node) {
+wchar_t* LinkedTwoWayList_toString(TwoWayNode* node) {
     size_t alloc_size = DEFAULT_ALLOC_SIZE;
     size_t str_size = 0;
-    wchar_t* str = (char*)malloc(sizeof(char) * alloc_size);
+    wchar_t* str = (wchar_t*)malloc(sizeof(wchar_t) * alloc_size);
     while (node != NULL) {
         str[str_size++] = node->symbol;
         if (str_size >= alloc_size) {
             alloc_size *= 2;
-            str = (char*)realloc(str, alloc_size);
+            str = (wchar_t*)realloc(str, sizeof(wchar_t) * alloc_size);
         }
         node = node->next;
     }
     str[str_size++] = '\0';
-    return (char*)realloc(str, str_size);
+    return (wchar_t*)realloc(str, sizeof(wchar_t) * str_size);
 }
 // Преобразование строки в двусвязный список
 TwoWayNode* LinkedTwoWayList_fromString(char* str) {

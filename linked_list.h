@@ -86,13 +86,6 @@ Node* LinkedList_empty(Node* node) {
     return node;
 }
 
-// Найти последний элемент списка
-Node* LinkedList_lastNode(Node* node) {
-    Node* end;
-    for (end = node; end->next != NULL; end = end->next)
-        ;
-    return end;
-}
 // Количество элементов списка
 size_t LinkedList_length(Node* node) {
     size_t len = 0;
@@ -101,14 +94,14 @@ size_t LinkedList_length(Node* node) {
     return len;
 }
 // Кол-во элементов между двумя элементами
-// Возвращает 0, если start == node
-// Возвращает SIZE_MAX, если node не находится в списке справа от start
-size_t LinkedList_dist(Node* start, Node* node) {
+// Возвращает 0, если start == end
+// Возвращает SIZE_MAX, если end не находится в списке справа от start
+size_t LinkedList_dist(Node* start, Node* end) {
     size_t len = 0;
-    Node* n;
-    for (n = start; n != node && n != NULL; n = n->next)
+    Node* node;
+    for (node = start; node != end && node != NULL; node = node->next)
         len++;
-    if (n == NULL)
+    if (node == NULL)
         return SIZE_MAX;
     return len;
 }
