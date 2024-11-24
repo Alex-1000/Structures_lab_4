@@ -4,12 +4,14 @@ project(
   VERSION 0.1.0
   LANGUAGES C)
 
-set(CURSES_NEED_WIDE TRUE)
-find_package(Curses REQUIRED)
-include_directories(${CURSES_INCLUDE_DIR})
-
 add_executable(linked_list linked_list.c)
-target_link_libraries(linked_list ${CURSES_LIBRARIES})
-
 add_executable(linked_two_way_list linked_two_way_list.c)
-target_link_libraries(linked_two_way_list ${CURSES_LIBRARIES})
+
+if(UNIX)
+  set(CURSES_NEED_WIDE TRUE)
+  find_package(Curses REQUIRED)
+  include_directories(${CURSES_INCLUDE_DIR})
+
+  target_link_libraries(linked_list ${CURSES_LIBRARIES})
+  target_link_libraries(linked_two_way_list ${CURSES_LIBRARIES})
+endif(UNIX)
