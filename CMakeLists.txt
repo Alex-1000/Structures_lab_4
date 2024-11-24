@@ -14,4 +14,6 @@ if(UNIX)
 
   target_link_libraries(linked_list ${CURSES_LIBRARIES})
   target_link_libraries(linked_two_way_list ${CURSES_LIBRARIES})
+else(UNIX)
+  include_directories("D:\\msys2\\mingw64\\include")
 endif(UNIX)
