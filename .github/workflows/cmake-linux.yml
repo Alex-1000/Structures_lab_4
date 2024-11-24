@@ -5,7 +5,13 @@ on:
     branches: [ $default-branch ]
   pull_request:
     branches: [ $default-branch ]
-
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Build on linux'
+        required: false
+        default: 'development'
+  
 env:
   BUILD_TYPE: Release
 
