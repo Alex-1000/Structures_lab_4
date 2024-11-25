@@ -89,6 +89,8 @@ Node* LinkedList_empty(Node* node) {
 // Количество элементов списка
 size_t LinkedList_length(Node* node) {
     size_t len = 0;
+    if (node->symbol == '\0')
+        return 0;
     for (Node* end = node; end != NULL; end = end->next)
         len++;
     return len;

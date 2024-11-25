@@ -167,6 +167,8 @@ TwoWayNode* LinkedTwoWayList_empty(TwoWayNode* node) {
 // Количество элементов списка
 size_t LinkedTwoWayList_length(TwoWayNode* node) {
     size_t len = 0;
+    if (node->symbol == '\0')
+        return 0;
     for (TwoWayNode* end = LinkedTwoWayList_start(node); end != NULL;
          end = end->next)
         len++;
