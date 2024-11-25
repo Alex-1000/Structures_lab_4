@@ -211,7 +211,8 @@ int main() {
                 print(WARNING_SYMBOL);
                 print(PTR_IN_END);
             } else {
-                printf("%ls%c\n", L"Значение за указателем: ", ptr->symbol);
+                printf("%ls%c\n", L"Значение за указателем: ",
+                       ptr->next->symbol);
             }
             update_terminal(start, ptr, buffer);
             break;
