@@ -88,39 +88,61 @@ const size_t NOT_INITIALIZED_size = 29 * sizeof(wchar_t);
 const wchar_t* INVALID_PTR = L"Указатель находится за пределами строки\n";
 const size_t INVALID_PTR_size = 41 * sizeof(wchar_t);
 
-wchar_t* indicator(TwoWayNode* start, TwoWayNode* TwoWayNode) {
-    wchar_t* str;
-    if (start == NULL) {
-        str = (wchar_t*)malloc(NOT_INITIALIZED_size);
-        memcpy(str, NOT_INITIALIZED, NOT_INITIALIZED_size);
-        return str;
+wchar_t* reverseString(wchar_t* str) {
+    if (str == NULL)
+        return NULL;
+    size_t len = 0;
+    for (wchar_t* ch_ptr = str; *ch_ptr != '\0'; ch_ptr++)
+        len++;
+    wchar_t* new_str;
+    if (len == 0) {
+        new_str = (wchar_t*)malloc(sizeof(wchar_t));
+        new_str[0] = '\0';
+        return new_str;
     }
-    size_t dist = LinkedTwoWayList_dist(start, TwoWayNode);
-    size_t len = LinkedTwoWayList_length(start);
-    if (dist == SIZE_MAX || len < dist) {
-        str = (wchar_t*)malloc(INVALID_PTR_size);
-        memcpy(str, INVALID_PTR, INVALID_PTR_size);
-    } else {
-        str = (wchar_t*)malloc(sizeof(wchar_t) * (dist + 3));
-        for (size_t i = 0; i < dist; i++)
-            str[i] = ' ';
-        str[dist] = '^';
-        str[dist + 1] = '\n';
-        str[dist + 2] = '\0';
-    }
+    new_str = (wchar_t*)malloc(sizeof(wchar_t) * (len + 1));
+    for (size_t i = 0; i < len; i++)
+        new_str[i] = str[len - i - 1];
+    new_str[len] = '\0';
+    return new_str;
+}
+
+wchar_t* indicator(size_t position) {
+    wchar_t* str = (wchar_t*)malloc(sizeof(wchar_t) * (position + 2));
+    for (size_t i = 0; i < position; i++)
+        str[i] = ' ';
+    str[position] = '^';
+    str[position + 1] = '\0';
     return str;
 }
 
 void update_terminal(TwoWayNode* ptr, wchar_t buffer) {
-    TwoWayNode* start = LinkedTwoWayList_start(ptr);
-    wchar_t* str = LinkedTwoWayList_toString(start);
-    printf("%ls\n", str);
-    free(str);
-    str = indicator(start, ptr);
-    print(str);
-    free(str);
+    if (ptr == NULL) {
+        print(NOT_INITIALIZED);
+    } else {
+        TwoWayNode* start = LinkedTwoWayList_start(ptr);
+        size_t dist = LinkedTwoWayList_dist(start, ptr);
+        size_t len = LinkedTwoWayList_length(start);
+
+        if (dist == SIZE_MAX || len < dist) {
+            print(INVALID_PTR);
+        } else if (dist == len) {
+            print(L"Строка пустая\n");
+        } else {
+            wchar_t* str = LinkedTwoWayList_toString(start);
+            wchar_t* reverse = reverseString(str);
+            wchar_t* pointer = indicator(dist);
+            wchar_t* reverse_pointer = indicator(len - dist - 1);
+            printf("%ls\n%ls\n%ls\n%ls\n", str, pointer, reverse,
+                   reverse_pointer);
+            free(str);
+            free(pointer);
+            free(reverse);
+            free(reverse_pointer);
+        }
+    }
     if (buffer == '\0')
-        print("\n");
+        gotoxy(0, wherey() + 1);
     else
         printf("%ls%c\n", L"Буффер: ", buffer);
 }
@@ -298,7 +320,10 @@ int main() {
                 print(WARNING_SYMBOL);
                 print(PTR_IN_START);
             } else {
-                ptr = LinkedTwoWayList_removePrevious(ptr);
+                if (ptr->prev->prev == NULL)
+                    LinkedTwoWayList_removePrevious(ptr);
+                else
+                    ptr = LinkedTwoWayList_removePrevious(ptr);
             }
             update_terminal(ptr, buffer);
             break;
@@ -314,7 +339,10 @@ int main() {
                 print(WARNING_SYMBOL);
                 print(PTR_IN_END);
             } else {
-                ptr = LinkedTwoWayList_removeNext(ptr);
+                if (ptr->next->next == NULL)
+                    LinkedTwoWayList_removeNext(ptr);
+                else
+                    ptr = LinkedTwoWayList_removeNext(ptr);
             }
             update_terminal(ptr, buffer);
             break;
@@ -331,7 +359,10 @@ int main() {
                 print(PTR_IN_START);
             } else {
                 buffer = ptr->prev->symbol;
-                LinkedTwoWayList_removePrevious(ptr);
+                if (ptr->prev->prev == NULL)
+                    LinkedTwoWayList_removePrevious(ptr);
+                else
+                    ptr = LinkedTwoWayList_removePrevious(ptr);
             }
             update_terminal(ptr, buffer);
             break;
@@ -348,7 +379,10 @@ int main() {
                 print(PTR_IN_END);
             } else {
                 buffer = ptr->next->symbol;
-                LinkedTwoWayList_removeNext(ptr);
+                if (ptr->next->next == NULL)
+                    LinkedTwoWayList_removeNext(ptr);
+                else
+                    ptr = LinkedTwoWayList_removeNext(ptr);
             }
             update_terminal(ptr, buffer);
             break;
@@ -440,9 +474,12 @@ int main() {
             break;
         case RESET:
             reset();
-            LinkedTwoWayList_empty(ptr);
-            free(ptr);
-            ptr = NULL;
+            if (ptr != NULL) {
+                LinkedTwoWayList_empty(ptr);
+                free(ptr);
+                ptr = NULL;
+            }
+            buffer = '\0';
             print(L"Работа со списком завершена\n");
             break;
         case EXIT:
@@ -464,6 +501,7 @@ int main() {
             print(L"Команда не распознана\n");
             update_terminal(ptr, buffer);
         }
+        printf("%ls%c\n", L"Последняя нажатая клавиша: ", ch);
     }
 
     endwin();

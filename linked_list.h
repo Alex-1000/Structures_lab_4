@@ -75,6 +75,8 @@ Node* LinkedList_remove(Node* node) {
 // Удалить все элементы после данного и отчистить данный элемент
 Node* LinkedList_empty(Node* node) {
     Node* next;
+    if (node == NULL)
+        return NULL;
     if (node->next != NULL) {
         for (Node* n = node->next; next != NULL; n = next) {
             next = n->next;

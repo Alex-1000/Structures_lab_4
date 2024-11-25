@@ -86,7 +86,7 @@ void update_terminal(Node* start, Node* ptr, wchar_t buffer) {
     print(str);
     free(str);
     if (buffer == '\0')
-        gotoxy(wherex(), wherey() + 1);
+        gotoxy(0, wherey() + 1);
     else
         printf("%ls%c\n", L"Буффер: ", buffer);
 }
@@ -223,7 +223,10 @@ int main() {
                 print(WARNING_SYMBOL);
                 print(PTR_IN_END);
             } else {
-                ptr = LinkedList_removeNext(ptr);
+                if (ptr->next->next == NULL)
+                    LinkedList_removeNext(ptr);
+                else
+                    ptr = LinkedList_removeNext(ptr);
             }
             update_terminal(start, ptr, buffer);
             break;
@@ -240,7 +243,10 @@ int main() {
                 print(PTR_IN_END);
             } else {
                 buffer = ptr->next->symbol;
-                ptr = LinkedList_removeNext(ptr);
+                if (ptr->next->next == NULL)
+                    LinkedList_removeNext(ptr);
+                else
+                    ptr = LinkedList_removeNext(ptr);
             }
             update_terminal(start, ptr, buffer);
             break;
@@ -289,10 +295,12 @@ int main() {
             break;
         case 'D':
             reset();
-            LinkedList_empty(start);
-            free(start);
-            start = NULL;
-            ptr = NULL;
+            if (start != NULL) {
+                LinkedList_empty(start);
+                free(start);
+                start = NULL;
+                ptr = NULL;
+            }
             buffer = '\0';
             print(L"Работа со списком завершена\n");
             break;
@@ -316,6 +324,7 @@ int main() {
             print(L"Команда не распознана\n");
             update_terminal(start, ptr, buffer);
         }
+        printf("%ls%c\n", L"Последняя нажатая клавиша: ", ch);
     }
 
     endwin();
