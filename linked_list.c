@@ -105,11 +105,8 @@ int main() {
     int show_help = 1;
 
     setlocale(LC_ALL, "ru_RU.UTF-8");
-
-#ifdef NCURSES
     initscr();
     noecho();
-#endif
 
     while (!stop) {
         print(L"Выберите команду...\n");
@@ -118,9 +115,7 @@ int main() {
             show_help = 0;
         }
         print(HELP_REPEAT);
-#ifdef NCURSES
         refresh();
-#endif
         ch = towupper(get());
         switch (ch) {
         case '1':
@@ -323,9 +318,6 @@ int main() {
         }
     }
 
-#ifdef NCURSES
     endwin();
-#endif
-
     return 0;
 }
